@@ -1,0 +1,4 @@
+He	3
+Hello	2
+K	1
+Me	1
