@@ -16,21 +16,27 @@ if operation == "map":
     f_output.write(map_proc.communicate()[0])
 
 elif operation == "reduce":
-    sort_proc = Popen(["python", str(__file__).strip("mapReduce.py") + "sort.py"], stdin = f_input, stdout = PIPE, stderr = PIPE)
+    data = []
+    for line in f_input:
+        data.append((line.split(" "))[0])
+    data.sort()
+    for i in range(len(data)):
+        data[i] += "\t1"
 
-    key, val = sort_proc.stdout.readline().split('\t')
-    in_reduce = key + '\t' + val
-
-    for line in sort_proc.stdout:
-        temp_key = line.split('\t')[0]
+    key, val = data[0].split('\t')
+    reduce_proc = Popen(["python", path_to_script], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    reduce_proc.stdin.write(key + '\t' + val + '\n')
+    for i in range(1, len(data)):
+        temp_key = data[i].split('\t')[0]
         if temp_key == key:
-            in_reduce += temp_key + '\t' + val
+           reduce_proc.stdin.write(temp_key + '\t' + val + '\n')
         else:
+            f_output.write(reduce_proc.communicate()[0])
+            reduce_proc.stdin.close()
             key = temp_key
-            reduce_proc = Popen(["python", path_to_script], stdin = PIPE, stdout = PIPE, stderr = PIPE)
-            f_output.write(reduce_proc.communicate(in_reduce.strip('\n'))[0])
-            in_reduce = key + '\t' + val
-    reduce_proc = Popen(["python", path_to_script], stdin = PIPE, stdout = PIPE, stderr = PIPE)
-    f_output.write(reduce_proc.communicate(in_reduce)[0])
+            reduce_proc = Popen(["python", path_to_script], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            reduce_proc.stdin.write(key + '\t' + val + '\n')
+    f_output.write(reduce_proc.communicate()[0])
+    reduce_proc.stdin.close()
 
 f_output.close()
