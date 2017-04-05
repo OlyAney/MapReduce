@@ -5,12 +5,11 @@ import sys
 
 # creating a temporary file that can fit into main memory records (sorted by key)
 def sort_and_write(chunks, index):
-    chunks = chunks.strip('\n').split('\n')
     chunks.sort()
     temp_f = "tmp_{0}.txt".format(index)
     with open(temp_f, "w") as f:
         for item in chunks:
-            f.write(item + '\n')
+            f.write(item)
     del chunks[:]
     return temp_f
 
@@ -22,9 +21,6 @@ if len(sys.argv) > 5:
         script_params.append(sys.argv[i])
 src_file = sys.argv[len(sys.argv) - 2]
 dst_file = sys.argv[len(sys.argv) - 1]
-#operation = "reduce"
-#src_file = "input.txt"
-#dst_file = "output.txt"
 f_output = open(dst_file, "w")
 f_input = open(src_file, "r")
 if operation == "map":
@@ -32,22 +28,31 @@ if operation == "map":
     f_output.write(map_proc.communicate()[0])
 
 elif operation == "reduce":
-    max_size = 2000
+    max_size = 20000
     temp_paths = []
     i = 0
     while True:
-        chunk = f_input.read(max_size)
-        if chunk == "":
+        chunk = f_input.readlines(max_size)
+        if not chunk:
             break
-        else:
-            if not chunk.endswith("\n"):
-                while not chunk.endswith("\n"):
-                    f_input.seek(f_input.tell() - 1, 0)
-                    chunk = chunk[:-1]
+        else:  
             temp_file = sort_and_write(chunk, i)
             temp_paths.append(temp_file)
         i += 1
-
+    # i= 0
+    # while True:
+    #     chunk = f_input.read(max_size)
+    #     if chunk == "":
+    #         break
+    #     else:
+    #         if not chunk.endswith("\n"):
+    #             while not chunk.endswith("\n"):
+    #                 f_input.seek(f_input.tell() - 1, 0)
+    #                 chunk = chunk[:-1]
+    #         temp_file = sort_and_write(chunk, i)
+    #         temp_paths.append(temp_file)
+    #     i += 1
+    #
     merger_output_name = "merger_output.txt"
     merger = Merger(merger_output_name)
     merger.merge(temp_paths)

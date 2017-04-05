@@ -2,7 +2,7 @@ import heapq
 from Queue import Queue
 import os
 
-max_size = 20
+max_size = 10000
 class Merger:
     def __init__(self, out):
         self.heap = []
@@ -10,32 +10,46 @@ class Merger:
 
     def merge_two(self, file1, file2, file_out):
         try:
-            if file1 is "":
-                file_out.write(open(file2, 'r').read().strip('\n'))
-                return
-            elif file2 is "":
-                file_out.write(open(file1, 'r').read().strip('\n'))
-                return
-            open_files = [open(file1, 'r'), open(file2, 'r')]
-         #   chunks = read_lines_chunk(open_files[0], max_size) + read_lines_chunk(open_files[1], max_size)
-            [heapq.heappush(self.heap, (f.read(), f)) for f in open_files]
-          #  [heapq.heappush(self.heap, (i, open_files[0])) for i in chunks[:len(chunks)/2]]
-          #  [heapq.heappush(self.heap, (i, open_files[1])) for i in chunks[len(chunks)/2:]]
-            while self.heap:
-                smallest = heapq.heappop(self.heap)
-                file_out.write(str(smallest[0]))
-                read_line = smallest[1].readline()
-                # checking that this file has not ended
-                #try:
-                #    read_lines_chunk(smallest[1])
-                #except
-                #if smallest[1].tell() == os.fstat(smallest[1].fileno()).st_size:
-                #    new_chunks = read_lines_chunk(smallest[1], max_size)
-                if len(read_line) != 0:
-                    # adding next element from current file
-                    heapq.heappush(self.heap, (read_line, smallest[1]))
-            [f.close() for f in open_files]
-            [os.remove(f.name) for f in open_files]
+
+            f_1 = open(file1, 'r')
+            f_2 = open(file2, 'r')
+            chunk_1 = f_1.readlines(max_size)
+            chunk_2 = f_2.readlines(max_size)
+            chunk_12 = []
+            i = j = 0
+            while i < len(chunk_1) or j < len(chunk_2):
+                if chunk_1[i] <= chunk_2[j]:
+                    chunk_12.append(chunk_1[i])
+                    i += 1
+                else:
+                    chunk_12.append(chunk_2[j])
+                    j += 1
+                if i == len(chunk_1):
+                    chunk_1 = f_1.readlines(max_size)
+                    if not chunk_1:
+                            [chunk_12.append(chunk_2[p]) for p in range(j, len(chunk_2))]
+                            while True:
+                                try:
+                                    chunk_12.append(f_2.readlines(max_size))
+                                except:
+                                    break
+                    break
+                if j == len(chunk_2):
+                    chunk_2 = f_2.readlines(max_size)
+                    if not chunk_2:
+                        [chunk_12.append(chunk_1[p]) for p in range(i, len(chunk_1))]
+                        while True:
+                            try:
+                                chunk_12.append(f_1.readlines(max_size))
+                            except:
+                                break
+                    break
+            [file_out.write(j) for j in chunk_12]
+            f_1.close()
+            f_2.close()
+            os.remove(file1)
+            os.remove(file2)
+            return
         except Exception, err_msg:
             print "Error while merging: %s" % str(err_msg)
 
@@ -47,16 +61,12 @@ class Merger:
         while not queue.empty():
             if queue.qsize() == 1:
                 self.output_file.write((open(queue.get(), "r").read()).strip('\n'))
-                [os.remove("temp_{0}.txt".format(k)) for k in range(j)]
-                [os.remove(p) for p in paths_list]
                 self.output_file.close()
                 return
             file_1 = queue.get()
             file_2 = queue.get()
             if queue.empty():
                 self.merge_two(file_1, file_2, self.output_file)
-                [os.remove("temp_{0}.txt".format(k)) for k in range(j)]
-                [os.remove(p) for p in paths_list]
                 self.output_file.close()
                 return
             merged_12 = open("temp_{0}.txt".format(j), "w+r")
@@ -66,19 +76,20 @@ class Merger:
             merged_12.close()
 
 
-def read_lines_chunk(f_in, m):
-    while True:
-        chunk = f_in.read(m)
-        if chunk == "":
-            break
-        else:
-            if not chunk.endswith("\n"):
-                while not chunk.endswith("\n"):
-                    f_in.seek(f_in.tell() - 1, 0)
-                    chunk = chunk[:-1]
-            final_ = chunk
-    l = final_.strip('\n').split('\n')
-    final_chunk = []
-    for i in l:
-        final_chunk.append(i + '\n')
-    return final_chunk
+# def read_lines_chunk(f_in, m):
+#     final_ = ""
+#     while True:
+#         chunk = f_in.read(m)
+#         if chunk == "":
+#             break
+#         else:
+#             if not chunk.endswith("\n"):
+#                 while not chunk.endswith("\n"):
+#                     f_in.seek(f_in.tell() - 1, 0)
+#                     chunk = chunk[:-1]
+#             final_ += chunk
+#     l = final_.strip('\n').split('\n')
+#     final_chunk = []
+#     for i in l:
+#         final_chunk.append(i + '\n')
+#     return final_chunk
