@@ -17,12 +17,15 @@ if operation == "map":
 
 elif operation == "reduce":
     data = []
-    for line in f_input:
-        data.append((line.split(" "))[0])
+    for line in f_input: 
+        data.append((line.split(" "))[0]) # вот этого вообще не понял
     data.sort()
-    for i in range(len(data)):
+    for i in range(len(data)): # или это такой странный код оставшийся с момента когда mapreduce был одной операцией решавшей как раз задачу wordcount
         data[i] += "\t1"
-
+    
+    # основная проблема - если сейчас запустить над каким-нибудь файлом последовательно map и reduce оно работать не будет
+    # input видимо получен каким-то другим кодом, потому что там в качестве сепараторов используются пробелы а не табы
+    # по смыслу как бы всё правильно, но недоработки такие - это не ок
     key, val = data[0].split('\t')
     reduce_proc = Popen(["python", path_to_script], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     reduce_proc.stdin.write(key + '\t' + val + '\n')
