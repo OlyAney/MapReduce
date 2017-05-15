@@ -4,13 +4,13 @@ import os
 import sys
 
 # creating a temporary file that can fit into main memory records (sorted by key)
-def sort_and_write(chunks, index):
+def sort_and_write(chunks, index): # так chunk или chunks ? всё-таки кажется первое
     chunks.sort()
     temp_f = "tmp_{0}.txt".format(index)
     with open(temp_f, "w") as f:
         for item in chunks:
             f.write(item)
-    del chunks[:]
+    del chunks[:] # вероятно [:] тут лишнее ?
     return temp_f
 
 operation = sys.argv[1]
@@ -27,7 +27,8 @@ if operation == "map":
     map_proc = Popen(["python", path_to_script] + script_params, stdin=f_input, stdout=PIPE, stderr=PIPE)
     f_output.write(map_proc.communicate()[0])
 
-elif operation == "reduce":
+elif operation == "reduce": # хорошая практика ругаться если ваша программа не запускается из-за неверного списка параметров
+    # сейчас она молча завершается и неясно - всё хорошо или нет
     max_size = 20000
     temp_paths = []
     i = 0
