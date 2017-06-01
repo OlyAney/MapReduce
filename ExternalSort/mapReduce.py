@@ -13,22 +13,24 @@ def sort_and_write(chunks, index):
     del chunks[:]
     return temp_f
 
-operation = sys.argv[1]
-path_to_script = sys.argv[2]
+#operation = sys.argv[1]
+#path_to_script = sys.argv[2]
 script_params = []
-if len(sys.argv) > 5:
-    for i in range(3, len(sys.argv) - 2):
-        script_params.append(sys.argv[i])
-src_file = sys.argv[len(sys.argv) - 2]
-dst_file = sys.argv[len(sys.argv) - 1]
-f_output = open(dst_file, "w")
-f_input = open(src_file, "r")
+#if len(sys.argv) > 5:
+#    for i in range(3, len(sys.argv) - 2):
+#        script_params.append(sys.argv[i])
+#src_file = sys.argv[len(sys.argv) - 2]
+#dst_file = sys.argv[len(sys.argv) - 1]
+operation = "reduce"
+path_to_script = "reduce.py"
+f_output = open("output.txt", "w")
+f_input = open("input.txt", "r")
 if operation == "map":
     map_proc = Popen(["python", path_to_script] + script_params, stdin=f_input, stdout=PIPE, stderr=PIPE)
     f_output.write(map_proc.communicate()[0])
 
 elif operation == "reduce":
-    max_size = 20000
+    max_size = 80
     temp_paths = []
     i = 0
     while True:

@@ -11,6 +11,7 @@ src_file = sys.argv[len(sys.argv) - 2]
 dst_file = sys.argv[len(sys.argv) - 1]
 f_output = open(dst_file, "w")
 f_input = open(src_file, "r")
+
 if operation == "map":
     map_proc = Popen(["python", path_to_script] + script_params, stdin = f_input, stdout = PIPE, stderr = PIPE)
     f_output.write(map_proc.communicate()[0])
@@ -18,7 +19,7 @@ if operation == "map":
 elif operation == "reduce":
     data = []
     for line in f_input:
-        data.append((line.split(" "))[0])
+        data.append((line.split("\t"))[0])
     data.sort()
     for i in range(len(data)):
         data[i] += "\t1"
